@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cycle Tracker</title>
+  <meta name="description" content="A free, private menstrual cycle tracker with period, fertile window and ovulation estimates. Your data never leaves your device.">
+  <meta name="theme-color" content="#b4366b">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Cycle Tracker</h1>
+    <span class="privacy">🔒 Stored only on this device</span>
+  </header>
+
+  <main>
+    <section id="today" class="card" aria-live="polite"></section>
+
+    <section class="card">
+      <div class="cal-head">
+        <button id="prev" aria-label="Previous month">‹</button>
+        <h2 id="month-label"></h2>
+        <button id="next" aria-label="Next month">›</button>
+      </div>
+      <div id="calendar" class="calendar" role="grid"></div>
+      <ul class="legend">
+        <li><i class="sw period"></i>Period</li>
+        <li><i class="sw predicted-period"></i>Predicted period</li>
+        <li><i class="sw fertile"></i>Fertile window</li>
+        <li><i class="sw ovulation"></i>Ovulation (est.)</li>
+      </ul>
+    </section>
+
+    <section id="day-panel" class="card" hidden></section>
+
+    <section class="card">
+      <h2>History</h2>
+      <div id="history"></div>
+    </section>
+
+    <section class="card">
+      <h2>Settings &amp; data</h2>
+      <div class="settings">
+        <label>Typical cycle length (days) <input id="set-cycle" type="number" min="15" max="90"></label>
+        <label>Typical period length (days) <input id="set-period" type="number" min="1" max="14"></label>
+        <label>Luteal phase (days) <input id="set-luteal" type="number" min="8" max="18"></label>
+      </div>
+      <p class="hint">Defaults are used until you have logged a couple of cycles; after that your own averages take over (except luteal phase).</p>
+      <div class="row">
+        <button id="export">Export data</button>
+        <label class="btn">Import data<input id="import" type="file" accept="application/json" hidden></label>
+        <button id="wipe" class="danger">Delete all data</button>
+      </div>
+    </section>
+
+    <section class="card disclaimer">
+      <h2>Please note</h2>
+      <p>Cycle Tracker gives <strong>estimates</strong> based on your logged dates and general averages. It is <strong>not a medical device</strong>, is <strong>not reliable contraception</strong>, and is no substitute for professional advice. See a doctor if your cycles are very irregular, very painful, or you are concerned about your health.</p>
+    </section>
+  </main>
+
+  <footer>Free and open source (MIT) · <a href="https://github.com/kettalevi/cycle-tracker">GitHub</a></footer>
+  <div id="toast" role="status" hidden></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

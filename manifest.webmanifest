@@ -1,0 +1,11 @@
+{
+  "name": "Cycle Tracker",
+  "short_name": "Cycle",
+  "description": "Free, private menstrual cycle tracker. Your data stays on your device.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbf7f9",
+  "theme_color": "#b4366b",
+  "icons": [{ "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

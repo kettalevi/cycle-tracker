@@ -1,0 +1,12 @@
+{
+  "name": "cycle-tracker",
+  "version": "0.1.0",
+  "description": "A free, private, open-source menstrual cycle tracker with period, fertile window and ovulation estimates. All data stays on your device.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "start": "node scripts/serve.js"
+  },
+  "repository": { "type": "git", "url": "git+https://github.com/kettalevi/cycle-tracker.git" }
+}

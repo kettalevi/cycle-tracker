@@ -17,6 +17,7 @@
   </header>
 
   <main>
+    <div id="banner" role="status" hidden></div>
     <section id="today" class="card" aria-live="polite"></section>
 
     <section class="card">
@@ -48,6 +49,20 @@
         <label>Typical period length (days) <input id="set-period" type="number" min="1" max="14"></label>
         <label>Luteal phase (days) <input id="set-luteal" type="number" min="8" max="18"></label>
       </div>
+      <h3>Reminders</h3>
+      <div class="settings">
+        <label>Remind me before my period
+          <select id="set-remind">
+            <option value="0">Off</option><option value="1">1 day before</option><option value="2">2 days before</option>
+            <option value="3">3 days before</option><option value="5">5 days before</option><option value="7">7 days before</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <button id="notify">Turn on notifications</button>
+        <button id="ics">Add to my calendar (.ics)</button>
+      </div>
+      <p class="hint" id="notify-hint">Notifications appear when you open the app, because it has no server to send them while closed. For reminders that arrive even when the app is closed, add the predicted dates to your phone's calendar app. Download the file and open it, and your calendar will remind you.</p>
       <p class="hint">Defaults are used until you have logged a couple of cycles; after that your own averages take over (except luteal phase).</p>
       <div class="row">
         <button id="export">Export data</button>

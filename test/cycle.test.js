@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   emptyData, addPeriodStart, endPeriod, removePeriod, cycleLengths, stats, predict,
-  currentCycle, classifyDay, normalizeData, addDays, diffDays, todayStr,
+  currentCycle, classifyDay, normalizeData, addDays, diffDays, todayStr, remindersFor, buildICS,
 } from "../src/cycle.js";
 
 const mk = (starts) => {
@@ -129,4 +129,37 @@ test("average period length ignores 1-day entries and uses real ones", () => {
   d.periods[1].end = "2026-02-02"; // 5 days
   d.periods[2].end = "2026-03-01"; // 4 days
   assert.equal(stats(d).avgPeriod, 5);
+});
+
+test("remindersFor: upcoming, today, late, fertile start, off, nothing logged", () => {
+  const d = mk(["2026-09-01", "2026-09-29", "2026-10-27"]); // next period 2026-11-24, fertile starts 11-05
+  assert.deepEqual(remindersFor(d, "2026-11-21"), []); // 3 days out, default 2
+  assert.match(remindersFor(d, "2026-11-22")[0].text, /in 2 days/);
+  assert.match(remindersFor(d, "2026-11-23")[0].text, /in 1 day\./);
+  assert.match(remindersFor(d, "2026-11-24")[0].text, /today/);
+  assert.match(remindersFor(d, "2026-11-26")[0].text, /2 days later/);
+  assert.match(remindersFor(d, "2026-11-05")[0].text, /fertile window starts today/);
+  assert.equal(remindersFor(d, "2026-11-05")[0].id, "fertile:2026-11-05");
+  d.settings.remindDays = 0;
+  assert.deepEqual(remindersFor(d, "2026-11-24"), []);
+  assert.deepEqual(remindersFor(emptyData(), "2026-11-24"), []);
+});
+
+test("remindDays is clamped on import", () => {
+  assert.equal(normalizeData({ settings: { remindDays: 50 } }).settings.remindDays, 2);
+  assert.equal(normalizeData({ settings: { remindDays: 0 } }).settings.remindDays, 0);
+});
+
+test("buildICS makes a valid-looking calendar with CRLF lines, alarms and no raw newlines in values", () => {
+  const d = mk(["2026-09-01", "2026-09-29", "2026-10-27"]);
+  const ics = buildICS(d, new Date("2026-11-02T10:00:00Z"));
+  assert.ok(ics.startsWith("BEGIN:VCALENDAR\r\n") && ics.endsWith("END:VCALENDAR\r\n"));
+  assert.equal((ics.match(/BEGIN:VEVENT/g) || []).length, 12);
+  assert.equal((ics.match(/END:VEVENT/g) || []).length, 12);
+  assert.ok(ics.includes("DTSTART;VALUE=DATE:20261124"));
+  assert.ok(ics.includes("DTEND;VALUE=DATE:20261129")); // exclusive end: 5-day period
+  assert.ok(ics.includes("TRIGGER:-P2D"));
+  d.settings.remindDays = 0;
+  assert.ok(!buildICS(d).includes("VALARM"));
+  assert.equal(buildICS(emptyData()).includes("VEVENT"), false);
 });

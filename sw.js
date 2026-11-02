@@ -1,5 +1,5 @@
 // Offline support: cache the app shell, serve cache-first, refresh in background.
-const CACHE = "cycle-tracker-v1";
+const CACHE = "cycle-tracker-v2";
 const SHELL = ["./", "index.html", "styles.css", "app.js", "src/cycle.js", "src/storage.js", "manifest.webmanifest", "icons/icon.svg"];
 
 self.addEventListener("install", (e) => {
@@ -19,4 +19,9 @@ self.addEventListener("fetch", (e) => {
       return hit || net;
     }),
   );
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: "window" }).then((cs) => (cs[0] ? cs[0].focus() : self.clients.openWindow("./"))));
 });

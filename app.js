@@ -212,7 +212,7 @@ async function renderReminders() {
   const sent = [];
   for (const r of fresh) {
     try {
-      if (reg) await reg.showNotification("Cycle Tracker", { body: r.text, icon: "icons/icon.svg", tag: r.id });
+      if (reg) await reg.showNotification("Cycle Tracker", { body: r.text, icon: "icons/icon-192.png", tag: r.id });
       else new Notification("Cycle Tracker", { body: r.text, tag: r.id });
       sent.push(r.id); // only remember it once delivery worked, so a failure is retried next time
     } catch { /* try again on a later visit */ }

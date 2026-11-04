@@ -2,12 +2,15 @@
 
 A free, open-source menstrual cycle tracker that runs in your browser. **Your data never leaves your device**: no accounts, no servers, no tracking.
 
+<p align="center"><img src="docs/screenshot.png" alt="Cycle Tracker showing the current cycle day, fertile window estimate and a month calendar" width="320"></p>
+
 ## Features
 
 - Log period start and end dates, flow, symptoms, mood and notes
 - Current cycle day and phase at a glance
 - Predicted next period, shown with a margin that widens when your cycles are irregular
 - Estimated fertile window and ovulation day
+- Reminders before your period, when it is late, and when your fertile window starts
 - Month calendar and cycle-length history chart
 - Works offline and can be installed on your phone's home screen (PWA)
 - Export and import your data as JSON; delete everything in one click
@@ -22,6 +25,13 @@ A free, open-source menstrual cycle tracker that runs in your browser. **Your da
 This is the calendar method. It is an estimate and cannot confirm ovulation.
 
 > **Disclaimer:** Cycle Tracker is not a medical device and is **not reliable contraception**. It is not a substitute for professional medical advice.
+
+## Reminders
+
+The app has no server, so it cannot send notifications while it is closed. Two options cover that:
+
+- **In-app and browser notifications** appear when you open the app (turn them on in Settings). Each reminder is only sent once.
+- **Calendar file (.ics)**: *Settings → Add to my calendar* downloads your predicted periods and fertile windows with an alert set the number of days you choose before each period. Open it on your phone or computer and your calendar app will remind you even when this app is closed. Re-download it from time to time so the dates follow your latest cycles.
 
 ## Run locally
 

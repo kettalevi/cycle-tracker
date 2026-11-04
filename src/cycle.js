@@ -5,6 +5,7 @@ export const DEFAULTS = Object.freeze({
   cycleLength: 28, // used until there is enough history
   periodLength: 5,
   lutealDays: 14, // days from ovulation to next period
+  remindDays: 2, // remind this many days before the period; 0 = off
 });
 
 const MIN_CYCLE = 15; // lengths outside this range are treated as outliers
@@ -56,6 +57,7 @@ export function normalizeData(raw) {
     cycleLength: clamp(s.cycleLength, MIN_CYCLE, MAX_CYCLE, DEFAULTS.cycleLength),
     periodLength: clamp(s.periodLength, 1, 14, DEFAULTS.periodLength),
     lutealDays: clamp(s.lutealDays, 8, 18, DEFAULTS.lutealDays),
+    remindDays: clamp(s.remindDays, 0, 7, DEFAULTS.remindDays),
   };
   return out;
 }
@@ -189,4 +191,63 @@ export function classifyDay(data, date, predictions, today) {
     }
   }
   return tags;
+}
+
+/**
+ * Reminders that apply on `today`. Pure: the caller decides how to show them.
+ * Each has a stable `id` so a notification is only sent once.
+ */
+export function remindersFor(data, today) {
+  const n = data.settings?.remindDays ?? DEFAULTS.remindDays;
+  const c = currentCycle(data, today);
+  if (!c || n === 0) return [];
+  const out = [];
+  const until = c.daysUntilPeriod;
+  if (c.lateBy > 0) {
+    out.push({ id: `late:${c.next.periodStart}`, text: `Your period is ${c.lateBy} day${c.lateBy === 1 ? "" : "s"} later than predicted.` });
+  } else if (until === 0) {
+    out.push({ id: `period:${c.next.periodStart}`, text: "Your period is expected today." });
+  } else if (until > 0 && until <= n) {
+    out.push({ id: `period:${c.next.periodStart}`, text: `Your period is expected in ${until} day${until === 1 ? "" : "s"}.` });
+  }
+  if (today === c.next.fertileStart) {
+    out.push({ id: `fertile:${c.next.fertileStart}`, text: "Your estimated fertile window starts today." });
+  }
+  return out;
+}
+
+const icsDate = (s) => s.replaceAll("-", "");
+const icsEscape = (t) => t.replace(/[\\;,]/g, (m) => "\\" + m).replace(/\n/g, "\\n");
+
+/**
+ * Build an iCalendar (.ics) file of predicted events so any calendar app can
+ * remind you, even when this app is closed. Events are all-day.
+ */
+export function buildICS(data, now = new Date()) {
+  const preds = predict(data, 6);
+  const remind = data.settings?.remindDays ?? DEFAULTS.remindDays;
+  const stamp = now.toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//cycle-tracker//EN", "CALSCALE:GREGORIAN"];
+  const event = (uid, start, endInclusive, title, alarmDays) => {
+    lines.push(
+      "BEGIN:VEVENT",
+      `UID:${uid}@cycle-tracker`,
+      `DTSTAMP:${stamp}`,
+      `DTSTART;VALUE=DATE:${icsDate(start)}`,
+      `DTEND;VALUE=DATE:${icsDate(addDays(endInclusive, 1))}`,
+      `SUMMARY:${icsEscape(title)}`,
+      "DESCRIPTION:Estimate only. Not medical advice or contraception.",
+      "TRANSP:TRANSPARENT",
+    );
+    if (alarmDays != null) {
+      lines.push("BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${icsEscape(title)}`, `TRIGGER:-P${alarmDays}D`, "END:VALARM");
+    }
+    lines.push("END:VEVENT");
+  };
+  for (const p of preds) {
+    event(`period-${p.periodStart}`, p.periodStart, p.periodEnd, "Period expected (estimate)", remind || null);
+    event(`fertile-${p.fertileStart}`, p.fertileStart, p.fertileEnd, "Fertile window (estimate)", null);
+  }
+  lines.push("END:VCALENDAR");
+  return lines.join("\r\n") + "\r\n";
 }

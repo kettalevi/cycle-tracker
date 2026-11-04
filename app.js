@@ -1,6 +1,6 @@
 import {
   addPeriodStart, endPeriod, removePeriod, stats, predict, currentCycle, classifyDay,
-  cycleLengths, normalizeData, emptyData, addDays, diffDays, todayStr,
+  cycleLengths, normalizeData, emptyData, addDays, diffDays, todayStr, remindersFor, buildICS,
 } from "./src/cycle.js";
 import { load, save, wipe } from "./src/storage.js";
 
@@ -189,8 +189,52 @@ function renderHistory() {
     })));
 }
 
+const NOTIFIED_KEY = "cycle-tracker:notified";
+function notifiedIds() {
+  try { return JSON.parse(localStorage.getItem(NOTIFIED_KEY)) || []; } catch { return []; }
+}
+
+/** Show today's reminders as a banner, and as a system notification once each (if allowed). */
+async function renderReminders() {
+  const banner = $("banner");
+  const due = remindersFor(data, today);
+  banner.replaceChildren();
+  banner.hidden = !due.length || dismissed === today + due.map((r) => r.id).join();
+  if (!banner.hidden) {
+    banner.append(h("span", {}, "🔔 " + due.map((r) => r.text).join(" ")),
+      h("button", { onclick: () => { dismissed = today + due.map((r) => r.id).join(); banner.hidden = true; } }, "Dismiss"));
+  }
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  const seen = notifiedIds();
+  const fresh = due.filter((r) => !seen.includes(r.id));
+  if (!fresh.length) return;
+  const reg = "serviceWorker" in navigator ? await navigator.serviceWorker.getRegistration() : null;
+  const sent = [];
+  for (const r of fresh) {
+    try {
+      if (reg) await reg.showNotification("Cycle Tracker", { body: r.text, icon: "icons/icon.svg", tag: r.id });
+      else new Notification("Cycle Tracker", { body: r.text, tag: r.id });
+      sent.push(r.id); // only remember it once delivery worked, so a failure is retried next time
+    } catch { /* try again on a later visit */ }
+  }
+  try {
+    if (sent.length) localStorage.setItem(NOTIFIED_KEY, JSON.stringify([...seen, ...sent].slice(-30)));
+  } catch { /* ignore */ }
+}
+let dismissed = "";
+
+function renderNotifyButton() {
+  const b = $("notify");
+  if (!("Notification" in window)) { b.hidden = true; return; }
+  const p = Notification.permission;
+  b.textContent = p === "granted" ? "Notifications are on ✓" : p === "denied" ? "Notifications blocked in browser" : "Turn on notifications";
+  b.disabled = p !== "default";
+}
+
 function renderSettings() {
   const s = data.settings;
+  $("set-remind").value = String(s.remindDays);
+  renderNotifyButton();
   $("set-cycle").value = s.cycleLength;
   $("set-period").value = s.periodLength;
   $("set-luteal").value = s.lutealDays;
@@ -203,6 +247,7 @@ function render() {
   renderDayPanel();
   renderHistory();
   renderSettings();
+  renderReminders();
 }
 
 $("prev").onclick = () => { view = view.m === 0 ? { y: view.y - 1, m: 11 } : { y: view.y, m: view.m - 1 }; renderCalendar(); };
@@ -216,6 +261,18 @@ for (const [id, key] of [["set-cycle", "cycleLength"], ["set-period", "periodLen
   });
 }
 
+$("set-remind").addEventListener("change", (e) => { data.settings.remindDays = +e.target.value; commit("Reminder updated"); });
+$("notify").onclick = async () => {
+  try { await Notification.requestPermission(); } catch { /* ignore */ }
+  render();
+};
+$("ics").onclick = () => {
+  if (!data.periods.length) { toast("Log a period first so there is something to predict."); return; }
+  const blob = new Blob([buildICS(data)], { type: "text/calendar" });
+  const a = h("a", { href: URL.createObjectURL(blob), download: "cycle-tracker-predictions.ics" });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
 $("export").onclick = () => {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const a = h("a", { href: URL.createObjectURL(blob), download: `cycle-tracker-${today}.json` });

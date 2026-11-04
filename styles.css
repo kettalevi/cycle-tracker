@@ -73,3 +73,9 @@ input[type=number] { width: 80px; font: inherit; padding: 6px; border-radius: 8p
 footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 0 16px 32px; }
 footer a { color: var(--accent); }
 #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px; max-width: 90vw; }
+
+h3 { margin: 16px 0 8px; font-size: .95rem; }
+select { font: inherit; padding: 6px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); }
+#banner { background: var(--accent); color: var(--accent-ink); border-radius: 14px; padding: 12px 16px; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+#banner button { background: transparent; color: inherit; border-color: currentColor; padding: 4px 10px; }
+#banner[hidden], #toast[hidden] { display: none; }

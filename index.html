@@ -8,6 +8,12 @@
   <meta name="theme-color" content="#b4366b">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Cycle">
+  <meta property="og:title" content="Cycle Tracker">
+  <meta property="og:description" content="Free, private cycle tracker with period, fertile window and ovulation estimates. Your data never leaves your device.">
+  <meta property="og:type" content="website">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -26,7 +32,7 @@
         <h2 id="month-label"></h2>
         <button id="next" aria-label="Next month">›</button>
       </div>
-      <div id="calendar" class="calendar" role="grid"></div>
+      <div id="calendar" class="calendar"></div>
       <ul class="legend">
         <li><i class="sw period"></i>Period</li>
         <li><i class="sw predicted-period"></i>Predicted period</li>
